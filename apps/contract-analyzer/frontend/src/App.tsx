@@ -296,4 +296,3 @@ export function App() {
     </div>
   );
 }
-}
