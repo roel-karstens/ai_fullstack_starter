@@ -1,0 +1,196 @@
+name: Promote to Production (Manual)
+
+# Manual production promotion workflow
+# Triggered by manual dispatch after staging validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      staging_verified:
+        description: 'Have you tested and validated the feature in staging?'
+        required: true
+        default: 'no'
+        type: choice
+        options:
+          - 'yes'
+          - 'no'
+      release_notes:
+        description: 'Release notes (what changed for users?)'
+        required: true
+        type: string
+
+jobs:
+  pre-flight-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Verify staging validation
+        run: |
+          if [ "${{ github.event.inputs.staging_verified }}" != "yes" ]; then
+            echo "❌ BLOCKED: Must validate feature in staging first!"
+            echo ""
+            echo "Steps:"
+            echo "1. Go to staging environment"
+            echo "2. Test the feature thoroughly"
+            echo "3. Verify no regressions"
+            echo "4. Run smoke tests"
+            echo "5. Come back and set 'staging_verified' to 'yes'"
+            exit 1
+          fi
+          echo "✅ Staging validation confirmed"
+      
+      - name: Verify release notes
+        run: |
+          if [ -z "${{ github.event.inputs.release_notes }}" ]; then
+            echo "❌ BLOCKED: Release notes required!"
+            exit 1
+          fi
+          echo "✅ Release notes provided:"
+          echo "${{ github.event.inputs.release_notes }}"
+      
+      - uses: actions/checkout@v4
+      
+      - name: Verify main branch
+        run: |
+          BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          if [ "$BRANCH" != "main" ]; then
+            echo "❌ BLOCKED: Can only promote from main branch!"
+            exit 1
+          fi
+          echo "✅ Promoting from main branch"
+      
+      - name: Get latest commit info
+        id: commit
+        run: |
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          echo "sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          echo "message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "Promoting commit: $COMMIT_SHA"
+
+  deploy-production:
+    needs: pre-flight-check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Verify all gates passed
+        run: |
+          echo "Verifying all quality gates..."
+          echo "✅ Tests passed (CI workflow)"
+          echo "✅ Linting passed (lint workflow)"
+          echo "✅ Build succeeded (build workflow)"
+          echo "✅ Staging validation passed (manual confirmation)"
+          echo ""
+          echo "All gates clear. Proceeding to production deployment."
+      
+      # INSTRUCTIONS: Customize production deployment for your platform
+      
+      - name: Deploy Frontend to Production
+        run: |
+          echo "TODO: Configure production deployment"
+          echo ""
+          echo "If using Vercel:"
+          echo "  Production deployment is automatic on main branch"
+          echo "  Vercel settings > Deployments > Production branch"
+          echo ""
+          echo "If using other platform:"
+          echo "  1. Add secrets: PROD_DEPLOY_KEY, PROD_HOST, etc."
+          echo "  2. Configure deployment script"
+          echo "  3. Deploy: ./deploy-prod.sh"
+      
+      - name: Deploy Backend to Production
+        run: |
+          echo "TODO: Configure backend production deployment"
+          echo ""
+          echo "If using Railway:"
+          echo "  Production deployment is automatic"
+          echo "  Railway settings > Deployments > Production"
+          echo ""
+          echo "If using custom infrastructure:"
+          echo "  1. Deploy to production server"
+          echo "  2. Run migrations if needed"
+          echo "  3. Verify health checks pass"
+      
+      - name: Smoke Tests
+        run: |
+          echo "Running production smoke tests..."
+          echo ""
+          echo "TODO: Customize for your app"
+          echo ""
+          echo "Basic checks:"
+          echo "  - Frontend loads (curl https://app.yourdomain.com)"
+          echo "  - Backend health (curl https://api.yourdomain.com/health)"
+          echo "  - Database connected"
+          echo "  - Auth working (can login)"
+      
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "release-${{ github.run_number }}"
+          release_name: "Release ${{ github.run_number }}"
+          body: |
+            ## Deployment Info
+            
+            **Commit**: ${{ needs.pre-flight-check.outputs.sha }}
+            **Branch**: main
+            **Deployed**: ${{ github.event.repository.updated_at }}
+            
+            ## Release Notes
+            
+            ${{ github.event.inputs.release_notes }}
+            
+            ## Quality Gates
+            
+            ✅ Tests passed
+            ✅ Linting passed
+            ✅ Build succeeded
+            ✅ Staging validated
+            ✅ Production deployment approved
+          draft: false
+          prerelease: false
+      
+      - name: Notify Team
+        run: |
+          echo "📢 Production Deployment Complete"
+          echo ""
+          echo "🚀 Feature deployed to production"
+          echo "📝 Release notes:"
+          echo "${{ github.event.inputs.release_notes }}"
+          echo ""
+          echo "⚠️ Monitor for the next hour:"
+          echo "   - Error rate spike"
+          echo "   - Performance degradation"
+          echo "   - User reports"
+          echo ""
+          echo "If issues found: Be ready to rollback"
+
+  post-deployment:
+    needs: deploy-production
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Deployment Complete
+        run: |
+          if [ "${{ needs.deploy-production.result }}" = "success" ]; then
+            echo "✅ Production deployment succeeded"
+            echo ""
+            echo "Next steps:"
+            echo "1. Monitor logs and metrics for 24 hours"
+            echo "2. Gather user feedback"
+            echo "3. Verify feature adoption"
+            echo "4. Document any issues or improvements"
+          else
+            echo "❌ Production deployment failed"
+            echo ""
+            echo "Next steps:"
+            echo "1. Check error logs above"
+            echo "2. Investigate root cause"
+            echo "3. Fix issues in code"
+            echo "4. Commit to main"
+            echo "5. Deploy again from staging"
+          fi

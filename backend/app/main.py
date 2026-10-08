@@ -3,15 +3,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.dev import router as dev_router
 from app.api.health import router as health_router
 from app.api.projects import router as projects_router
-from app.api.dev import router as dev_router
 from app.core.config import settings
-from app.dependencies import engine, DATABASE_URL
+from app.dependencies import DATABASE_URL, engine
 from app.models.project import Base
 
 # Create database tables on startup
-print(f"\n🔧 Starting up...")
+print("\n🔧 Starting up...")
 print(f"📍 DATABASE_URL: {DATABASE_URL[:50]}..." if DATABASE_URL else "No DATABASE_URL")
 
 try:
@@ -28,7 +28,7 @@ if DATABASE_URL and DATABASE_URL.startswith("postgresql"):
         with engine.begin() as conn:
             # Enable RLS
             conn.exec_driver_sql("ALTER TABLE IF EXISTS public.projects ENABLE ROW LEVEL SECURITY;")
-            
+
             # Drop existing policies if they exist (cleaner than trying IF NOT EXISTS)
             for policy_name in [
                 "users_select_own_projects",
@@ -39,7 +39,7 @@ if DATABASE_URL and DATABASE_URL.startswith("postgresql"):
                 conn.exec_driver_sql(
                     f"DROP POLICY IF EXISTS \"{policy_name}\" ON public.projects;"
                 )
-            
+
             # Create policies
             conn.exec_driver_sql("""
                 CREATE POLICY "users_select_own_projects" ON public.projects
@@ -57,7 +57,7 @@ if DATABASE_URL and DATABASE_URL.startswith("postgresql"):
                 CREATE POLICY "users_delete_own_projects" ON public.projects
                   FOR DELETE USING (auth.uid() = owner_id);
             """)
-            
+
             # Create indexes
             conn.exec_driver_sql("""
                 CREATE INDEX IF NOT EXISTS idx_projects_owner_id ON public.projects(owner_id);
@@ -65,7 +65,7 @@ if DATABASE_URL and DATABASE_URL.startswith("postgresql"):
             conn.exec_driver_sql("""
                 CREATE INDEX IF NOT EXISTS idx_projects_created_at ON public.projects(created_at DESC);
             """)
-            
+
             print("✅ RLS policies configured")
     except Exception as e:
         print(f"⚠️  Warning setting up RLS: {e}")

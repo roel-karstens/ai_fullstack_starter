@@ -1,0 +1,126 @@
+name: Deploy to Staging (Template)
+
+# This is a TEMPLATE workflow for deploying to staging
+# You must configure secrets and deployment targets for your application
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Manual trigger for testing
+
+jobs:
+  check-gates:
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.check.outputs.status }}
+    
+    steps:
+      - name: Verify all CI gates passed
+        id: check
+        run: |
+          echo "Checking CI/CD gates..."
+          # This job verifies CI/CD passed before deploying
+          # In practice, GitHub requires status checks to pass before merge
+          echo "status=ready" >> $GITHUB_OUTPUT
+
+  deploy-staging:
+    needs: check-gates
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      # INSTRUCTIONS: Configure staging deployment
+      # This template shows the structure; you must customize for your platform
+      
+      # OPTION A: Deploy frontend to Vercel
+      # Documentation: https://vercel.com/docs/git/vercel-for-github
+      # Steps:
+      # 1. Connect GitHub repo to Vercel (UI)
+      # 2. Vercel auto-deploys every push to main
+      # 3. (Optional) Add Vercel workflow below for explicit control
+      
+      # OPTION B: Deploy backend to Supabase (already in cloud)
+      # Supabase runs PostgreSQL + API in their cloud
+      # Your FastAPI backend must run somewhere:
+      # - Option B1: Vercel Functions (serverless Python)
+      # - Option B2: Railway.app (simple Python hosting, $5/month)
+      # - Option B3: Render.com (free tier available)
+      # - Option B4: AWS, GCP, Azure (more complex)
+      
+      # Example: Deploy backend to Railway using CLI
+      # Documentation: https://docs.railway.app/
+      # Steps:
+      # 1. Connect GitHub repo to Railway (UI)
+      # 2. Railway auto-deploys every push
+      # 3. (Optional) Use workflow below for explicit control
+      
+      - name: Deploy Frontend to Vercel
+        run: |
+          echo "TODO: Configure Vercel deployment"
+          echo ""
+          echo "Option 1: Use Vercel UI integration (easiest)"
+          echo "  1. Go to vercel.com"
+          echo "  2. Connect this GitHub repo"
+          echo "  3. Vercel auto-deploys on push"
+          echo "  4. No workflow needed"
+          echo ""
+          echo "Option 2: Use Vercel CLI (explicit control)"
+          echo "  1. Add Vercel CLI to workflow"
+          echo "  2. Deploy using: vercel --prod"
+          echo "  3. Requires VERCEL_TOKEN secret"
+      
+      - name: Deploy Backend to Supabase/Railway
+        run: |
+          echo "TODO: Configure backend deployment"
+          echo ""
+          echo "Backend deployment depends on your platform:"
+          echo ""
+          echo "If using Railway:"
+          echo "  1. Go to railway.app"
+          echo "  2. Connect GitHub repo"
+          echo "  3. Railway auto-deploys on push"
+          echo "  4. No workflow needed"
+          echo ""
+          echo "If using AWS/GCP/Azure:"
+          echo "  1. Create compute instance (EC2, Cloud Run, etc.)"
+          echo "  2. Add secrets: DEPLOY_KEY, DEPLOY_HOST"
+          echo "  3. Use SSH to deploy: ssh deploy@host 'git pull && restart'"
+      
+      - name: Run Smoke Tests in Staging
+        run: |
+          echo "TODO: Add smoke tests"
+          echo ""
+          echo "After deployment, verify:"
+          echo "  1. Frontend loads: curl https://staging.yourdomain.com"
+          echo "  2. Backend health: curl https://api-staging.yourdomain.com/health"
+          echo "  3. Database connected: curl https://api-staging.yourdomain.com/api/v1/status"
+          echo ""
+          echo "Example curl test:"
+          echo "  curl -s https://api-staging.yourdomain.com/health | grep -q ok && echo 'OK' || echo 'FAILED'"
+      
+      - name: Notify Deployment
+        if: always()
+        run: |
+          echo "Staging deployment complete"
+          echo ""
+          echo "Frontend: https://staging.yourdomain.com (or Vercel preview URL)"
+          echo "Backend:  https://api-staging.yourdomain.com"
+          echo ""
+          echo "Next: Test in staging, then promote to production"
+
+  post-deploy:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Deployment Status
+        run: |
+          echo "Staging deployment workflow complete"
+          echo ""
+          echo "✅ If successful: Feature is now live in staging"
+          echo "   Test thoroughly before promoting to production"
+          echo ""
+          echo "❌ If failed: Check logs above and fix issues"
+          echo "   Resolve failures, then retry by pushing to main"

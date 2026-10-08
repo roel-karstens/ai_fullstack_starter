@@ -1,15 +1,16 @@
 """Development-only endpoints for testing without Supabase Auth."""
 
-import jwt
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, HTTPException, status, Depends
+
+import jwt
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from app.core.auth import get_current_user
 from app.core.config import settings
 from app.dependencies import get_db
 from app.models.project import Project
-from app.core.auth import get_current_user
 
 router = APIRouter(prefix="/api/v1/dev", tags=["dev"])
 
@@ -31,7 +32,7 @@ class TokenResponse(BaseModel):
 
 class ProjectDebugInfo(BaseModel):
     """Debug info for a project."""
-    
+
     id: str
     name: str
     owner_id: str
@@ -40,7 +41,7 @@ class ProjectDebugInfo(BaseModel):
 
 class UserInfo(BaseModel):
     """Current user info."""
-    
+
     user_id: str
 
 
@@ -95,7 +96,7 @@ async def debug_all_projects(db: Session = Depends(get_db)) -> list[ProjectDebug
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Dev endpoints only available in development mode",
         )
-    
+
     projects = db.query(Project).all()
     return [
         ProjectDebugInfo(
@@ -120,7 +121,7 @@ async def debug_current_user(user_id: str = Depends(get_current_user)) -> UserIn
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Dev endpoints only available in development mode",
         )
-    
+
     return UserInfo(user_id=user_id)
 
 

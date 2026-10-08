@@ -1,5 +1,17 @@
 # GitHub Copilot Instructions
 
+## 🏭 AI Software Factory
+
+This repository is an **AI Software Factory** — a reusable, production-grade system for building web applications with GitHub Copilot.
+
+**Start here:**
+- **New project?** → Read [`docs/factory/`](../../docs/factory/README.md)
+- **New feature?** → Use [`start-feature` prompt](./../prompts/start-feature.prompt.md)
+- **Building code?** → Use [`implement-feature` prompt](./../prompts/implement-feature.prompt.md)
+- **Need reference?** → See [`factory-workflow.md`](../../docs/factory/factory-workflow.md)
+
+---
+
 ## Project Overview
 
 **AI-Ready Full-Stack Starter**
@@ -37,14 +49,25 @@ This repository includes specialized infrastructure for AI-assisted development 
 - Examples: **verification**, database schema, frontend debugging, deployment, security review, testing
 
 **Agents** (`.github/agents/`)
-- Specialized responsibilities: architect, database, security-reviewer, code-reviewer
-- Invoke for expert analysis and review
-- Delegate complex work
+- Specialized responsibilities for different roles
+- ✅ `product.agent.md` — Problem discovery & requirements
+- ✅ `architect.agent.md` — Architecture design & feasibility
+- ✅ `developer.agent.md` — Implementation & coding
+- ✅ `code-reviewer.agent.md` — Code quality review
+- ✅ `database.agent.md` — Schema & migration review
+- ✅ `security-reviewer.agent.md` — Security audit
+- Invoke specific agents for their expertise domain
 
 **Prompts** (`.github/prompts/`)
-- Explicit user workflows
-- **verify-and-ship** — Post-implementation verification (use after implementing!)
-- implement-feature, review, security-review, database-change, test-and-review
+- Explicit user workflows for common tasks
+- `start-project.prompt.md` — Initialize new application (use this first for new projects)
+- `start-feature.prompt.md` — Discover & prepare new feature (use this for each feature)
+- `implement-feature.prompt.md` — Implement approved feature
+- `verify-and-ship.prompt.md` — Verify feature works before shipping
+- `review.prompt.md` — Conduct code review
+- `security-review.prompt.md` — Security audit
+- `database-change.prompt.md` — Database migration
+- `test-and-review.prompt.md` — Testing & validation
 
 ### How It Works
 
