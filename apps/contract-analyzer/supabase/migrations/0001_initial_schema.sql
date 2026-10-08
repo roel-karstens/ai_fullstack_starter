@@ -1,41 +1,97 @@
--- Initial schema for AI Full-Stack Starter
--- Creates projects table with RLS policies
+-- Contract Analyzer Database Schema with Row Level Security
 
--- Create projects table
-CREATE TABLE IF NOT EXISTS public.projects (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  owner_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  name text NOT NULL,
-  description text,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT projects_owner_name_unique UNIQUE(owner_id, name)
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Contracts table
+CREATE TABLE contracts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    lawyer_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_url TEXT NOT NULL,
+    parties TEXT[] DEFAULT ARRAY[]::TEXT[],
+    key_dates JSONB DEFAULT '{}'::JSONB,
+    obligations TEXT[] DEFAULT ARRAY[]::TEXT[],
+    risk_score INTEGER DEFAULT 0,
+    analysis_status VARCHAR(50) DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- Enable Row Level Security
-ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+-- Risk flags table
+CREATE TABLE risk_flags (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contract_id UUID NOT NULL REFERENCES contracts(id) ON DELETE CASCADE,
+    lawyer_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    severity VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    recommendation TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
 
--- RLS Policy: Users can read their own projects
-CREATE POLICY "users_select_own_projects" ON public.projects
-  FOR SELECT
-  USING (auth.uid() = owner_id);
+-- Analysis results table
+CREATE TABLE analyses (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    contract_id UUID NOT NULL UNIQUE REFERENCES contracts(id) ON DELETE CASCADE,
+    lawyer_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    extracted_terms JSONB DEFAULT '{}'::JSONB,
+    safe_clauses TEXT[] DEFAULT ARRAY[]::TEXT[],
+    comparison_result JSONB DEFAULT '{}'::JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
 
--- RLS Policy: Users can insert their own projects
-CREATE POLICY "users_insert_own_projects" ON public.projects
-  FOR INSERT
-  WITH CHECK (auth.uid() = owner_id);
+-- Enable RLS on contracts
+ALTER TABLE contracts ENABLE ROW LEVEL SECURITY;
 
--- RLS Policy: Users can update their own projects
-CREATE POLICY "users_update_own_projects" ON public.projects
-  FOR UPDATE
-  USING (auth.uid() = owner_id)
-  WITH CHECK (auth.uid() = owner_id);
+CREATE POLICY contracts_select_own ON contracts
+    FOR SELECT USING (auth.uid() = lawyer_id);
 
--- RLS Policy: Users can delete their own projects
-CREATE POLICY "users_delete_own_projects" ON public.projects
-  FOR DELETE
-  USING (auth.uid() = owner_id);
+CREATE POLICY contracts_insert_own ON contracts
+    FOR INSERT WITH CHECK (auth.uid() = lawyer_id);
 
--- Create indexes for performance
-CREATE INDEX idx_projects_owner_id ON public.projects(owner_id);
-CREATE INDEX idx_projects_created_at ON public.projects(created_at DESC);
+CREATE POLICY contracts_update_own ON contracts
+    FOR UPDATE USING (auth.uid() = lawyer_id);
+
+CREATE POLICY contracts_delete_own ON contracts
+    FOR DELETE USING (auth.uid() = lawyer_id);
+
+-- Enable RLS on risk_flags
+ALTER TABLE risk_flags ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY risk_flags_select_own ON risk_flags
+    FOR SELECT USING (auth.uid() = lawyer_id);
+
+CREATE POLICY risk_flags_insert_own ON risk_flags
+    FOR INSERT WITH CHECK (auth.uid() = lawyer_id);
+
+CREATE POLICY risk_flags_update_own ON risk_flags
+    FOR UPDATE USING (auth.uid() = lawyer_id);
+
+CREATE POLICY risk_flags_delete_own ON risk_flags
+    FOR DELETE USING (auth.uid() = lawyer_id);
+
+-- Enable RLS on analyses
+ALTER TABLE analyses ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY analyses_select_own ON analyses
+    FOR SELECT USING (auth.uid() = lawyer_id);
+
+CREATE POLICY analyses_insert_own ON analyses
+    FOR INSERT WITH CHECK (auth.uid() = lawyer_id);
+
+CREATE POLICY analyses_update_own ON analyses
+    FOR UPDATE USING (auth.uid() = lawyer_id);
+
+CREATE POLICY analyses_delete_own ON analyses
+    FOR DELETE USING (auth.uid() = lawyer_id);
+
+-- Create indexes
+CREATE INDEX idx_contracts_lawyer_id ON contracts(lawyer_id);
+CREATE INDEX idx_risk_flags_contract_id ON risk_flags(contract_id);
+CREATE INDEX idx_risk_flags_lawyer_id ON risk_flags(lawyer_id);
+CREATE INDEX idx_analyses_contract_id ON analyses(contract_id);
+CREATE INDEX idx_analyses_lawyer_id ON analyses(lawyer_id);
