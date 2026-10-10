@@ -1,4 +1,4 @@
-# 🚀 All 3 SaaS Apps - Ready for Inspection
+# 🚀 All 4 SaaS Apps - Ready for Inspection
 
 **Status**: ✅ RUNNING LOCALLY  
 **Date**: October 8, 2026  
@@ -14,6 +14,7 @@ Open these URLs in your browser to inspect each app:
 | **🧠 Therapy Assistant** | http://localhost:5173/ | Client management, session notes, AI summaries, mood analytics |
 | **⚖️ Contract Analyzer** | http://localhost:5174/ | Contract upload, risk analysis, term extraction, template comparison |
 | **⚡ Energy Platform** | http://localhost:5175/ | Client portfolio, building analysis, AI recommendations, ROI calculator |
+| **🔌 ChargePark** | http://localhost:5176/ | EV charging search, real-time pricing, cost optimization, destination-first |
 
 ---
 
@@ -147,6 +148,29 @@ Open these URLs in your browser to inspect each app:
 
 ---
 
+### 4. ChargePark (Port 5176)
+
+**Purpose**: Help EV drivers make smart charging decisions based on price, charging time, and proximity.
+
+**Screens**:
+- **Destination Search**: Search for a location (e.g., "Rotterdam Centraal")
+  - Shows map with nearby charging stations
+  - Battery level slider (0-100%, default 60%)
+- **Charging Options**: Ranked list of available chargers sorted by cost
+  - Shows: Price (€/kWh), charging time estimate, distance to walk
+  - Green badge for cheapest option
+  - Yellow for medium-cost options
+  - Red for premium pricing
+- **Charger Details**: Deep dive into a specific charging station
+  - Real-time availability and current pricing
+  - Operator information (Allego, Ionity, etc.)
+  - Charging speed (kW) and estimated time
+  - Navigation integration (distance, walking time)
+
+**Demo Data**: Rotterdam area with real NDW charging stations, dynamic pricing based on time of day
+
+---
+
 ## 🔧 How to Extend
 
 **To Connect Frontend to Backend**:
@@ -204,6 +228,15 @@ Open these URLs in your browser to inspect each app:
 - Color-coded recommendations (High=red, Medium=yellow)
 - Grid layout showing savings, cost, payback side-by-side
 - Roadmap section with numbered next steps
+
+### ChargePark
+- Mobile-first minimalist design
+- Location search with map preview
+- Battery level slider for easy adjustment
+- Cost-optimized ranking (green/yellow/red pricing tiers)
+- Real-time pricing display with operator information
+- Clear distance and time indicators for user decision-making
+- Responsive single-column layout for on-the-go usage
 
 ---
 

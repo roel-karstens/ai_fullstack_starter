@@ -1,6 +1,6 @@
-# AI Software Factory - 3 SaaS Apps Monorepo
+# AI Software Factory - 4 SaaS Apps Monorepo
 
-**Status**: 🚀 **In Development** - Parallel build of 3 complete SaaS applications
+**Status**: 🚀 **In Development** - Parallel build of 4 complete SaaS applications
 
 **Repository**: [roel-karstens/ai_fullstack_starter](https://github.com/roel-karstens/ai_fullstack_starter)
 
@@ -25,14 +25,15 @@ ai_fullstack_starter/
 │   ├── project-manager/          ← Original: Project management CRUD app
 │   ├── therapy-assistant/        ← 🚀 NEW: AI Therapy Assistant for solo practitioners
 │   ├── contract-analyzer/        ← 🚀 NEW: AI Contract analysis platform for lawyers
-│   └── energy-platform/          ← 🚀 NEW: Energy consulting platform
+│   ├── energy-platform/          ← 🚀 NEW: Energy consulting platform
+│   └── chargepark/               ← 🚀 NEW: EV charging decision-support app
 │
 └── scripts/              ← Shared deployment, setup scripts
 ```
 
 ---
 
-## 🎯 The 3 Apps
+## 🎯 The 4 Apps
 
 ### App 1: **AI Therapy Assistant** 🧠
 **For**: Solo therapists, therapists in small practices  
@@ -96,6 +97,30 @@ ai_fullstack_starter/
 - **AI**: Claude API (bill analysis, optimization recommendations)
 
 **Timeline**: 1-2 weeks (MVP) → 2-3 weeks (complete)
+
+**Status**: 🚀 Ready to build
+
+---
+
+### App 4: **ChargePark** 🔌
+**For**: EV drivers in the Netherlands, trip planners, fleet managers  
+**Problem Solved**: Fragmented charging options, unclear pricing, optimization friction  
+**Core Features**:
+- Destination-first charging search (e.g., "Rotterdam Centraal")
+- Real-time charging availability and pricing from NDW (Dutch charging network)
+- Cost optimization (price × charging time × walking distance)
+- Live pricing comparison across operators (Allego, Ionity, etc.)
+- Charging time estimation based on battery level
+- Ranked recommendations sorted by cost, speed, or proximity
+- Mobile-first responsive design for on-the-go decisions
+
+**Tech Stack**:
+- **Frontend**: React + TypeScript (destination search, ranking UI, map view)
+- **Backend**: FastAPI + Python (NDW integration, cost calculation, routing)
+- **Database**: PostgreSQL + PostGIS (charging stations, pricing, geography)
+- **Data**: NDW API (Dutch charging network), OSRM (routing), Nominatim (geocoding)
+
+**Timeline**: 2-3 weeks (MVP with Rotterdam scope) → 4-5 weeks (nationwide)
 
 **Status**: 🚀 Ready to build
 
@@ -179,6 +204,7 @@ All 3 apps inherit the **AI Software Factory** from the root:
 | Therapy Assistant | ⏳ Starting | ⏰ Pending | ⏰ Pending | ⏰ Pending | ⏰ Pending |
 | Contract Analyzer | ⏳ Starting | ⏰ Pending | ⏰ Pending | ⏰ Pending | ⏰ Pending |
 | Energy Platform | ⏳ Starting | ⏰ Pending | ⏰ Pending | ⏰ Pending | ⏰ Pending |
+| ChargePark | ⏳ Starting | ⏰ Pending | ⏰ Pending | ⏰ Pending | ⏰ Pending |
 
 ---
 
